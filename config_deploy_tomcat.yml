@@ -1,0 +1,53 @@
+---
+  - name: Install and configure tomcat
+    hosts: servers
+    gather_facts: false
+    become: yes
+    vars:
+        env_type: "{{ env }}"
+    tasks:
+      - name: updating repos
+        yum:
+          name: "*"
+          state: latest
+          
+      - name: Installing required java
+        yum:
+          name: java-1.8.0-openjdk
+          state: present
+
+      - name: check if tomcat exist
+        stat: path=/usr/local/apache-tomcat-9.0.56
+        register: tomcat
+        
+      - name: download required tomcat
+        get_url:
+          url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.56/bin/apache-tomcat-9.0.56.tar.gz
+          dest:  
+        when: tomcat.stat.isdir is not defined
+
+      - name: extracting downloaded tomcat
+        ansible.builtin.unarchive:
+          src: /usr/local/apache-tomcat-9.0.56.tar.gz
+          dest: /usr/local
+          remote_src: yes
+        when: tomcat.stat.isdir is not defined
+      
+      - name: start tomcat
+        command: /usr/local/apache-tomcat-9.0.56/bin/catalina.sh start
+        
+      - name: download war file
+        get_url: 
+          url: https://github.com/arthking17/DevOps_Technical_Test/blob/b1827e10c6e64514e9f479bc221e47d7c51194f0/sample.war
+          dest: /tmp/sample-1.0.war
+          
+      - name: deploy war file on tomcat
+        command: mv /tmp/sample-1.0.war /usr/local/apache-tomcat-9.0.56/webapps/sample.war
+      
+      - name: defining Heap JVM max size for DEV
+        command: java -Xmx256M /usr/local/apache-tomcat-9.0.56/webapps
+        when: env_type == "DEV"
+      
+      - name: defining Heap JVM max size for PROD
+        command: java -Xmx512M /usr/local/apache-tomcat-9.0.56/webapps
+        when: env_type == "PROD"
