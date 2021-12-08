@@ -32,9 +32,15 @@
           dest: /usr/local
           remote_src: yes
         when: tomcat.stat.isdir is not defined
+        
+      - name: open tomcat ports in firewall
+        command: firewall-cmd --permanent --zone=public --add-port=8080/tcp
+        
+      - name: reload firewall
+        command: firewall-cmd --reload
       
-      - name: start tomcat
-        command: /usr/local/apache-tomcat-9.0.56/bin/catalina.sh start
+      - name: start tomcat service
+        command: /usr/local/apache-tomcat-9.0.56/bin/startup.sh
         
       - name: download war file
         get_url: 
@@ -44,10 +50,19 @@
       - name: deploy war file on tomcat
         command: mv /tmp/sample-1.0.war /usr/local/apache-tomcat-9.0.56/webapps/sample.war
       
+      - name: start tomcat
+        command: /usr/local/apache-tomcat-9.0.56/bin/catalina.sh start
+        environment:
+          CATALINA_HOME: /usr/local/apache-tomcat-9.0.56
+          CATALINA_PID: /usr/local/apache-tomcat-9.0.56/logs/tomcat.pid
+          
+      - name: waiting launching of instance
+        wait_for: port=8080
+      
       - name: defining Heap JVM max size for DEV
-        command: java -Xmx256M /usr/local/apache-tomcat-9.0.56/webapps
+        command: java -Xmx256M /usr/local/apache-tomcat-9.0.56/webapps/sample.war
         when: env_type == "DEV"
       
       - name: defining Heap JVM max size for PROD
-        command: java -Xmx512M /usr/local/apache-tomcat-9.0.56/webapps
+        command: java -Xmx512M /usr/local/apache-tomcat-9.0.56/webapps/sample.war
         when: env_type == "PROD"

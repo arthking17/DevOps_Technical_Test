@@ -15,6 +15,24 @@ docker run --name myapp_container --rm -dt --privileged=true -v ${PWD}:/data mya
 echo ""
 
 echo ""
+echo "update repo in docker container"
+echo "---------------------------------"
+docker exec -it myapp_container apt-get -y update
+echo ""
+
+echo ""
+echo "install curl ansible in docker container"
+echo "---------------------------------"
+docker exec -it myapp_container apt-get install --fix-missing -y curl ansible
+echo ""
+
+echo ""
+echo "edit hosts file in docker container"
+echo "---------------------------------"
+docker exec -it myapp_container echo '[server]\nhost1 ansible_ssh_host=192.168.1.18\n' > /etc/ansible/hosts 
+echo ""
+
+echo ""
 echo "execute tomcat_test.sh in docker container"
 echo "---------------------------------"
 docker exec -it myapp_container /bin/bash data/tomcat_test.sh DEV
