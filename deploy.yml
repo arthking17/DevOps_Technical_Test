@@ -10,37 +10,59 @@
         yum:
           name: "*"
           state: latest
-          
-      - name: Installing required java
-        yum:
-          name: java-1.8.0-openjdk
-          state: present
+      
+      - name: defining Heap JVM max size for DEV
+        command: java -Xmx256M -version
+        when: env_type == "DEV"
+      
+      - name: defining Heap JVM max size for PROD
+        command: java -Xmx52M -version
+        when: env_type == "PROD"
 
       - name: check if tomcat exist
-        stat: path=/usr/local/apache-tomcat-9.0.56
+        stat: path=/tmp/apache-tomcat-9.0.56
         register: tomcat
+
+      - name: check if tomcat exist
+        stat: path=/usr/local/tomcat9
+        register: tomcat9
         
       - name: download required tomcat
         get_url:
           url: https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.56/bin/apache-tomcat-9.0.56.tar.gz
-          dest:  
+          dest: /tmp
         when: tomcat.stat.isdir is not defined
 
       - name: extracting downloaded tomcat
         ansible.builtin.unarchive:
-          src: /usr/local/apache-tomcat-9.0.56.tar.gz
-          dest: /usr/local
+          src: /tmp/apache-tomcat-9.0.56.tar.gz
+          dest: /tmp
           remote_src: yes
-        when: tomcat.stat.isdir is not defined
+        
+      - name: deployment of tomcat
+        command: mv /tmp/apache-tomcat-9.0.56 /usr/local/tomcat9
+        when: tomcat9.stat.isdir is not defined
         
       - name: open tomcat ports in firewall
         command: firewall-cmd --permanent --zone=public --add-port=8080/tcp
         
       - name: reload firewall
         command: firewall-cmd --reload
-      
-      - name: start tomcat service
-        command: /usr/local/apache-tomcat-9.0.56/bin/startup.sh
+
+      - name: install tomcat as a service
+        command: cp tomcat9.service /etc/systemd/system/tomcat9.service
+
+      - name: install tomcat as a service
+        command: chown root:root /etc/systemd/system/tomcat9.service
+
+      - name: install tomcat as a service
+        command: systemctl deamon-reload
+
+      - name: install tomcat as a service
+        command: chkconfig --levels 35 tomcat9 on
+
+      - name: install tomcat as a service
+        command: service tomcat9 start
         
       - name: download war file
         get_url: 
@@ -48,21 +70,7 @@
           dest: /tmp/sample-1.0.war
           
       - name: deploy war file on tomcat
-        command: mv /tmp/sample-1.0.war /usr/local/apache-tomcat-9.0.56/webapps/sample.war
-      
-      - name: start tomcat
-        command: /usr/local/apache-tomcat-9.0.56/bin/catalina.sh start
-        environment:
-          CATALINA_HOME: /usr/local/apache-tomcat-9.0.56
-          CATALINA_PID: /usr/local/apache-tomcat-9.0.56/logs/tomcat.pid
+        command: mv /tmp/sample-1.0.war /usr/local/tomcat9/webapps/sample.war
           
       - name: waiting launching of instance
         wait_for: port=8080
-      
-      - name: defining Heap JVM max size for DEV
-        command: java -Xmx256M /usr/local/apache-tomcat-9.0.56/webapps/sample.war
-        when: env_type == "DEV"
-      
-      - name: defining Heap JVM max size for PROD
-        command: java -Xmx512M /usr/local/apache-tomcat-9.0.56/webapps/sample.war
-        when: env_type == "PROD"
