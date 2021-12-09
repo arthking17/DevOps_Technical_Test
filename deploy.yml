@@ -52,7 +52,7 @@
         
       - name: install tomcat as a service > download tomcat9.service
         get_url: 
-          url: https://github.com/arthking17/DevOps_Technical_Test/blob/5157651fed4a6098eca45eb1988192c8f9dd28f0/tomcat9.service
+          url: https://raw.githubusercontent.com/arthking17/DevOps_Technical_Test/main/tomcat9.service
           dest: /tmp/tomcat9.service
 
       - name: install tomcat as a service > add tomcat9.service
