@@ -16,7 +16,7 @@
         when: env_type == "DEV"
       
       - name: defining Heap JVM max size for PROD
-        command: java -Xmx52M -version
+        command: java -Xmx512M -version
         when: env_type == "PROD"
 
       - name: check if tomcat exist
@@ -46,9 +46,11 @@
         
       - name: open tomcat ports in firewall
         command: firewall-cmd --permanent --zone=public --add-port=8080/tcp
+        when: tomcat9.stat.isdir is not defined 
         
       - name: reload firewall
         command: firewall-cmd --reload
+        when: tomcat9.stat.isdir is not defined
         
       - name: install tomcat as a service > download tomcat9.service
         get_url: 
@@ -64,15 +66,15 @@
       - name: install tomcat as a service > reload daemon
         command: systemctl daemon-reload
 
-      - name: install tomcat as a service
+      - name: install tomcat as a service > enable tomcat9
         command: systemctl enable tomcat9.service
 
-      - name: install tomcat as a service
+      - name: install tomcat as a service > start service tomcat9
         command: service tomcat9 start
         
       - name: download war file
         get_url: 
-          url: https://github.com/arthking17/DevOps_Technical_Test/blob/b1827e10c6e64514e9f479bc221e47d7c51194f0/sample.war
+          url: https://github.com/arthking17/DevOps_Technical_Test/raw/main/sample.war
           dest: /tmp/sample-1.0.war
           
       - name: deploy war file on tomcat
