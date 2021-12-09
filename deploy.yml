@@ -7,24 +7,16 @@
         env_type: "{{ env }}"
     tasks:
       - name: updating repos
-        yum:
+        apt:
           name: "*"
           state: latest
-      
-      - name: defining Heap JVM max size for DEV
-        command: java -Xmx256M -version
-        when: env_type == "DEV"
-      
-      - name: defining Heap JVM max size for PROD
-        command: java -Xmx512M -version
-        when: env_type == "PROD"
 
       - name: check if tomcat exist
         stat: path=/tmp/apache-tomcat-9.0.56
         register: tomcat
 
       - name: check if tomcat instance exist
-        stat: path=/usr/local/tomcat9
+        stat: path=/usr/share/tomcat9
         register: tomcat9
         
       - name: download required tomcat
@@ -41,7 +33,7 @@
         when: tomcat.stat.isdir is not defined
         
       - name: deployment of tomcat
-        command: mv /tmp/apache-tomcat-9.0.56 /usr/local/tomcat9
+        command: mv /tmp/apache-tomcat-9.0.56 /usr/share/tomcat9
         when: tomcat9.stat.isdir is not defined
         
       - name: open tomcat ports in firewall
@@ -69,14 +61,29 @@
       - name: install tomcat as a service > enable tomcat9
         command: systemctl enable tomcat9.service
 
-      - name: install tomcat as a service > create var/log/tomcat9 dir
+      - name: install tomcat as a service > create tomcat log dir
         command: mkdir -p /var/log/tomcat9
 
       - name: install tomcat as a service > create tomcat log file
         command: touch /var/log/tomcat9/catalina.out
 
-      - name: install tomcat as a service > start service tomcat9
-        command: service tomcat9 start
+      - name: launching instance tomcat
+        command: nohup /usr/share/tomcat9/bin/catalina.sh start
+        environment:
+          CATALINA_HOME: /usr/share/tomcat9
+          CATALINA_PID: /usr/share/tomcat9/logs/tomcat.pid
+          CATALINA_OPTS: -Xmx256m
+          CATALINA_OUT: /var/log/tomcat9/catalina.out
+        when: env_type == "DEV"
+
+      - name: launching instance tomcat
+        command: nohup /usr/share/tomcat9/bin/catalina.sh start
+        environment:
+          CATALINA_HOME: /usr/share/tomcat9
+          CATALINA_PID: /usr/share/tomcat9/logs/tomcat.pid
+          CATALINA_OPTS: -Xmx512m
+          CATALINA_OUT: /var/log/tomcat9/catalina.out
+        when: env_type == "PROD"
         
       - name: download war file
         get_url: 
