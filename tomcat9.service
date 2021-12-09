@@ -16,8 +16,8 @@ Environment=CATALINA_OUT=/var/log/tomcat9/catalina.out
 ExecStart=/usr/local/tomcat9/bin/startup.sh
 ExecStop=/usr/local/tomcat9/bin/shutdown.sh
 
-User=tomcat
-Group=tomcat
+User=root
+Group=root
 UMask=0007
 RestartSec=10
 Restart=always
