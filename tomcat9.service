@@ -11,7 +11,6 @@ Environment=CATALINA_HOME=/usr/local/tomcat9
 Environment=CATALINA_BASE=/usr/local/tomcat9
 Environment='CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseParallelGC'
 Environment='JAVA_OPTS=-Djava.awt.headless=true -Djava.security.egd=file:/dev/./urandom'
-Environment=CATALINA_OUT=/var/log/tomcat9/catalina.out
 
 ExecStart=/usr/local/tomcat9/bin/startup.sh
 ExecStop=/usr/local/tomcat9/bin/shutdown.sh

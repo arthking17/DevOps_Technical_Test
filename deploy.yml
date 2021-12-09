@@ -23,7 +23,7 @@
         stat: path=/tmp/apache-tomcat-9.0.56
         register: tomcat
 
-      - name: check if tomcat exist
+      - name: check if tomcat instance exist
         stat: path=/usr/local/tomcat9
         register: tomcat9
         
@@ -38,6 +38,7 @@
           src: /tmp/apache-tomcat-9.0.56.tar.gz
           dest: /tmp
           remote_src: yes
+        when: tomcat.stat.isdir is not defined
         
       - name: deployment of tomcat
         command: mv /tmp/apache-tomcat-9.0.56 /usr/local/tomcat9
@@ -48,18 +49,23 @@
         
       - name: reload firewall
         command: firewall-cmd --reload
+        
+      - name: install tomcat as a service > download tomcat9.service
+        get_url: 
+          url: https://github.com/arthking17/DevOps_Technical_Test/blob/5157651fed4a6098eca45eb1988192c8f9dd28f0/tomcat9.service
+          dest: /tmp/tomcat9.service
+
+      - name: install tomcat as a service > add tomcat9.service
+        command: cp /tmp/tomcat9.service /etc/systemd/system/tomcat9.service
 
       - name: install tomcat as a service
-        command: cp tomcat9.service /etc/systemd/system/tomcat9.service
+        command: chown 700 /etc/systemd/system/tomcat9.service
 
       - name: install tomcat as a service
-        command: chown root:root /etc/systemd/system/tomcat9.service
+        command: systemctl daemon-reload
 
       - name: install tomcat as a service
-        command: systemctl deamon-reload
-
-      - name: install tomcat as a service
-        command: chkconfig --levels 35 tomcat9 on
+        command: systemctl enable tomcat9.service
 
       - name: install tomcat as a service
         command: service tomcat9 start
