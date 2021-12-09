@@ -58,10 +58,10 @@
       - name: install tomcat as a service > add tomcat9.service
         command: cp /tmp/tomcat9.service /etc/systemd/system/tomcat9.service
 
-      - name: install tomcat as a service
+      - name: install tomcat as a service > edit rights
         command: chown 700 /etc/systemd/system/tomcat9.service
 
-      - name: install tomcat as a service
+      - name: install tomcat as a service > reload daemon
         command: systemctl daemon-reload
 
       - name: install tomcat as a service
