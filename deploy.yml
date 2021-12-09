@@ -69,6 +69,12 @@
       - name: install tomcat as a service > enable tomcat9
         command: systemctl enable tomcat9.service
 
+      - name: install tomcat as a service > create var/log/tomcat9 dir
+        command: mkdir /var/log/tomcat9
+
+      - name: install tomcat as a service > create catalina.out file
+        command: touch /var/log/tomcat9/catalina.out
+
       - name: install tomcat as a service > start service tomcat9
         command: service tomcat9 start
         
