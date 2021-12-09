@@ -84,7 +84,12 @@
           dest: /tmp/sample-1.0.war
           
       - name: deploy war file on tomcat
-        command: mv /tmp/sample-1.0.war /usr/local/tomcat9/webapps/sample.war
+        command: mv /tmp/sample-1.0.war /usr/share/tomcat9/webapps/sample.war
+        
+      - name: launching instance tomcat
+        command: nohup /usr/share/tomcat9/bin/catalina.sh start
+        environment:
+          CATALINA_HOME: /
           
       - name: waiting launching of instance
         wait_for: port=8080
