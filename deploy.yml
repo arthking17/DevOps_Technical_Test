@@ -72,7 +72,7 @@
       - name: install tomcat as a service > create var/log/tomcat9 dir
         command: mkdir -p /var/log/tomcat9
 
-      - name: install tomcat as a service > create catalina.out file
+      - name: install tomcat as a service > create tomcat log file
         command: touch /var/log/tomcat9/catalina.out
 
       - name: install tomcat as a service > start service tomcat9
